@@ -1,0 +1,268 @@
+/* ==============================================
+   ChatGPT Nav Bars — DeepSeek-style navigator
+   ============================================== */
+
+/* ── Strip: fixed right-edge container ──────── */
+#cg-nav-strip {
+  position: fixed;
+  top: 8vh;
+  bottom: 8vh;
+  right: 20px;          /* moved left — clear of the scrollbar */
+  width: 26px;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  cursor: default;
+}
+
+/* Wider invisible hover zone (no gap when moving to tooltip) */
+#cg-nav-strip::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -6px; right: -6px;
+  z-index: -1;
+}
+
+/* ── Track: no vertical line, just a positioning container ── */
+#cg-nav-bars-track {
+  position: relative;
+  width: 2px;
+  height: 100%;
+  background: transparent;   /* ← line removed */
+}
+
+/* ── Individual bars ─────────────────────────── */
+.cg-nav-bar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);   /* top-aligned: no -50% Y */
+  width: 20px;
+  height: 4px;
+  border-radius: 2px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.20);
+  transition: width 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+}
+
+.dark .cg-nav-bar {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.cg-nav-bar:hover {
+  width: 24px;
+  background: rgba(0, 0, 0, 0.52);
+}
+
+.dark .cg-nav-bar:hover {
+  background: rgba(255, 255, 255, 0.70);
+}
+
+/* Pinned bar — gold */
+.cg-nav-bar.cg-bar-pinned {
+  background: #c89800 !important;
+  box-shadow: 0 0 6px rgba(200, 152, 0, 0.55);
+}
+
+.dark .cg-nav-bar.cg-bar-pinned {
+  background: #f0c000 !important;
+  box-shadow: 0 0 7px rgba(240, 192, 0, 0.6);
+}
+
+.cg-nav-bar.cg-bar-pinned:hover {
+  width: 24px;
+  box-shadow: 0 0 10px rgba(200, 152, 0, 0.7);
+}
+
+/* ── Tooltip popup panel ─────────────────────── */
+#cg-nav-tooltip {
+  position: fixed;
+  right: 50px;           /* sits to the left of the strip */
+  top: 50%;
+  transform: translateY(-50%) scale(0.96);
+  transform-origin: right center;
+  width: 226px;
+  max-height: 68vh;
+  overflow-y: auto;
+  z-index: 9998;
+  border-radius: 12px;
+  padding: 5px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.17s ease, transform 0.17s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Light mode */
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  box-shadow: -4px 4px 22px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0,0,0,0.07);
+  color: #333;
+}
+
+.dark #cg-nav-tooltip {
+  background: rgba(30, 31, 34, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: -4px 4px 22px rgba(0, 0, 0, 0.55);
+  color: #c8c8cc;
+}
+
+#cg-nav-tooltip.visible {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(-50%) scale(1);
+}
+
+/* ── Tooltip header ──────────────────────────── */
+#cg-nav-tooltip-header {
+  padding: 5px 10px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.38;
+  user-select: none;
+}
+
+/* ── Tooltip message rows ────────────────────── */
+.cg-tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #444;
+  /* NO transition on background — eliminates flicker on re-paint */
+  transition: none;
+}
+
+.dark .cg-tooltip-item {
+  color: #aaa;
+}
+
+/* Use :hover purely in CSS — stable, no JS involvement */
+.cg-tooltip-item:hover {
+  background: rgba(0, 0, 0, 0.055);
+  color: #111;
+}
+
+.dark .cg-tooltip-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #eee;
+}
+
+.cg-tooltip-item.cg-item-pinned {
+  color: #9a7000;
+}
+
+.dark .cg-tooltip-item.cg-item-pinned {
+  color: #d4a400;
+}
+
+.cg-tooltip-item.cg-item-pinned:hover {
+  background: rgba(200, 160, 0, 0.07);
+}
+
+/* Row number */
+.cg-tooltip-item-num {
+  font-size: 10px;
+  min-width: 14px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.28;
+}
+
+/* Truncated message text */
+.cg-tooltip-item-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pin / Unpin star button */
+.cg-tooltip-pin-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;       /* prevent squeezing */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  pointer-events: auto;  /* always hittable, even when invisible */
+}
+
+.cg-tooltip-item:hover .cg-tooltip-pin-btn {
+  opacity: 0.42;
+}
+
+.cg-tooltip-item:hover .cg-tooltip-pin-btn:hover {
+  opacity: 1;
+  transform: scale(1.25);
+}
+
+.cg-tooltip-item.cg-item-pinned .cg-tooltip-pin-btn {
+  opacity: 1;
+}
+
+/* Row divider */
+.cg-tooltip-divider {
+  height: 1px;
+  margin: 2px 8px;
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.dark .cg-tooltip-divider {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Tooltip scrollbar ───────────────────────── */
+#cg-nav-tooltip::-webkit-scrollbar { width: 3px; }
+#cg-nav-tooltip::-webkit-scrollbar-track { background: transparent; }
+#cg-nav-tooltip::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.28);
+  border-radius: 2px;
+}
+
+/* ── Pinned message left-border in main chat ─── */
+.cg-main-highlighted {
+  position: relative;
+}
+
+.cg-main-highlighted::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: #c89800;
+  border-radius: 2px;
+  opacity: 0.85;
+}
+
+.dark .cg-main-highlighted::before {
+  background: #f0c000;
+}
+
+/* ── Flash outline on scroll-to ─────────────── */
+@keyframes cg-flash {
+  0%   { outline: 2px solid rgba(91, 111, 207, 0.65); outline-offset: 2px; }
+  100% { outline: 2px solid rgba(91, 111, 207, 0);    outline-offset: 6px; }
+}
+
+.cg-flash-message {
+  animation: cg-flash 1.8s ease-out;
+  border-radius: 4px;
+}
